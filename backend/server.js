@@ -4,25 +4,29 @@ require('dotenv').config();
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// Enable CORS for Vercel Frontend
+app.use(cors({
+  origin: '*', // Production mein apni vercel domain bhi dal sakte ho
+  credentials: true
+}));
+
 app.use(express.json());
 
-// Auth Routes (Ye ensure karega ki /api/auth/login route sahi se chale)
-const authRoutes = require('./routes/auth'); // Check kar lena ki auth routes ki file yhi hai
-app.use('/api/auth', authRoutes);
+// Main Routes Registeration
+const authRoutes = require('./routes/auth');
+app.use('/api/auth', authRoutes); // Ensure URL path /api/auth/login banega
 
-// Agar candidates aur jobs ke routes bhi hain toh unhe yahan jod do:
-// const candidateRoutes = require('./routes/candidates');
-// const jobRoutes = require('./routes/jobs');
-// app.use('/api/candidates', candidateRoutes);
-// app.use('/api/jobs', jobRoutes);
-
+// Health check route
 app.get('/', (req, res) => {
-  res.send('Qveto ATS Backend is running!');
+  res.send('Qveto ATS Backend API is running!');
+});
+
+// 404 Fallback Handler
+app.use((req, res) => {
+  res.status(404).json({ message: `Route ${req.originalUrl} not found on server` });
 });
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`Server listening on port ${PORT}`);
 });
