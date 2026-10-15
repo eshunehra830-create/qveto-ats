@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'https://qveto-backend.onrender.com/api';
 
 const handleResponse = async (response) => {
   if (!response.ok) {
