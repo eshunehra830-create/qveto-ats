@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchCandidates, updateCandidateStage, addCandidateWithResume } from '../services/api';
-import CandidateModel from '../components/CandidateModel';
+import CandidateModel from '../components/candidateModel';
 import Toast from '../components/Toast';
 
 const STAGES = ['Applied', 'Screening', 'Interview', 'Offer', 'Hired'];

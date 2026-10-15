@@ -1,81 +1,113 @@
-import React, { useState, useEffect } from 'react';
-import LoginPage from './pages/LoginPage';
-import JobsPage from './pages/JobsPage';
-import CandidatesPage from './pages/candidatespage';
+import React, { useState } from 'react';
+import { BrowserRouter, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
+import { loginUser } from './services/api';
 
-export default function App() {
-  const [user, setUser] = useState(null);
-  const [activeTab, setActiveTab] = useState('jobs');
+// --- Login Component ---
+const Login = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (e) {
-        localStorage.removeItem('user');
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const data = await loginUser({ email, password });
+      if (data.token) {
+        localStorage.setItem('token', data.token);
       }
+      navigate('/dashboard');
+    } catch (err) {
+      console.error('Login Error:', err);
+      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+    } finally {
+      setLoading(false);
     }
-  }, []);
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
+      <form onSubmit={handleLogin} className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+        <h2 className="text-2xl font-bold mb-6 text-center text-slate-800">Qveto ATS Sign In</h2>
+        
+        {error && <div className="bg-red-100 text-red-700 p-3 rounded mb-4 text-sm">{error}</div>}
+
+        <div className="mb-4">
+          <label className="block text-slate-700 text-sm font-semibold mb-2">Email Address</label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="w-full p-3 border rounded-lg border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Enter your email"
+          />
+        </div>
+
+        <div className="mb-6">
+          <label className="block text-slate-700 text-sm font-semibold mb-2">Password</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="w-full p-3 border rounded-lg border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Enter your password"
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200"
+        >
+          {loading ? 'Signing In...' : 'Sign In'}
+        </button>
+      </form>
+    </div>
+  );
+};
+
+// --- Dashboard Component ---
+const Dashboard = () => {
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
+    navigate('/');
   };
 
-  // 1. Agar User Logged in nahi hai, toh Login Page dikhao
-  if (!user) {
-    return <LoginPage onLoginSuccess={(userData) => setUser(userData)} />;
-  }
-
-  // 2. Logged in hone par ATS Portal Header + Pages dikhao
   return (
-    <div className="min-h-screen bg-slate-100">
-      {/* Top Header & Navigation */}
-      <nav className="bg-slate-900 text-white shadow-md">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center space-x-3">
-            <span className="text-xl font-bold tracking-wide text-blue-400">Qveto ATS</span>
-            <span className="text-xs bg-blue-600 px-2 py-0.5 rounded text-white font-medium">Pro</span>
-          </div>
-          
-          <div className="flex space-x-4 items-center">
-            <button 
-              onClick={() => setActiveTab('jobs')}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${activeTab === 'jobs' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:text-white'}`}
-            >
-              Jobs Management
-            </button>
-            
-            <button 
-              onClick={() => setActiveTab('candidates')}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${activeTab === 'candidates' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:text-white'}`}
-            >
-              Candidates Pipeline
-            </button>
-
-            <div className="h-4 w-px bg-slate-700 mx-2"></div>
-
-            <span className="text-xs bg-slate-800 border border-slate-700 px-3 py-1 rounded-full text-slate-300 uppercase">
-              {user.role || 'Recruiter'}
-            </span>
-
-            <button 
-              onClick={handleLogout}
-              className="text-xs bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded font-medium transition-colors"
-            >
-              Logout
-            </button>
-          </div>
+    <div className="min-h-screen bg-slate-100 p-8">
+      <div className="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-slate-800">Qveto ATS Dashboard</h1>
+          <button
+            onClick={handleLogout}
+            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
+          >
+            Logout
+          </button>
         </div>
-      </nav>
-
-      {/* Main Content Areas */}
-      <main className="py-6">
-        {activeTab === 'jobs' && <JobsPage />}
-        {activeTab === 'candidates' && <CandidatesPage />}
-      </main>
+        <p className="text-slate-600">Welcome! You have successfully logged in to your ATS dashboard.</p>
+      </div>
     </div>
+  );
+};
+
+// --- Main App Component with Router ---
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
