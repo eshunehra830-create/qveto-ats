@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchCandidates, updateCandidateStage, addCandidateWithResume } from '../services/api';
-import CandidateModel from '../components/CandidateModel';
+import CandidateModel from '../components/CandidateCard';
 import Toast from '../components/Toast';
 
 export default function CandidatesPage() {
