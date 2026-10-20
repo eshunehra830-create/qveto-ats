@@ -2,59 +2,43 @@ import React, { useEffect, useState } from 'react';
 import { fetchJobs, fetchCandidates } from '../services/api';
 
 export default function DashboardPage() {
-  const [stats, setStats] = useState({
-    totalJobs: 0,
-    totalCandidates: 0,
-  });
+  const [jobs, setJobs] = useState([]);
+  const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const loadDashboardData = async () => {
+    const loadData = async () => {
       try {
-        setLoading(true);
-        const [jobs, candidates] = await Promise.all([
-          fetchJobs(),
-          fetchCandidates()
-        ]);
-        setStats({
-          totalJobs: jobs.length,
-          totalCandidates: candidates.length,
-        });
-      } catch (err) {
-        setError(err.message);
+        const jobsData = await fetchJobs();
+        const candidatesData = await fetchCandidates();
+        setJobs(jobsData || []);
+        setCandidates(candidatesData || []);
+      } catch (error) {
+        console.error('Failed to load dashboard data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    loadDashboardData();
+    loadData();
   }, []);
 
-  if (loading) return <div className="p-6 text-gray-600">Loading Dashboard...</div>;
-  if (error) return <div className="p-6 text-red-500">Error loading dashboard: {error}</div>;
+  if (loading) {
+    return <div className="p-4 text-center">Loading...</div>;
+  }
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">Admin Dashboard</h1>
-      
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
-          <h3 className="text-sm font-medium text-gray-500 uppercase">Total Active Jobs</h3>
-          <p className="text-3xl font-bold text-blue-600 mt-2">{stats.totalJobs}</p>
+      <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="p-4 border rounded shadow">
+          <h2 className="text-xl font-semibold mb-2">Jobs ({jobs.length})</h2>
+          {/* यहाँ अपनी Job List रेंडर करें */}
         </div>
-        <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
-          <h3 className="text-sm font-medium text-gray-500 uppercase">Total Candidates</h3>
-          <p className="text-3xl font-bold text-green-600 mt-2">{stats.totalCandidates}</p>
+        <div className="p-4 border rounded shadow">
+          <h2 className="text-xl font-semibold mb-2">Candidates ({candidates.length})</h2>
+          {/* यहाँ अपनी Candidate List रेंडर करें */}
         </div>
-      </div>
-
-      <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
-        <h2 className="text-lg font-semibold mb-2 text-gray-700">Welcome to Qveto ATS</h2>
-        <p className="text-gray-600">
-          Your recruitment pipeline is connected and running live with the backend database. Use the sidebar to manage jobs and view applicants.
-        </p>
       </div>
     </div>
   );
