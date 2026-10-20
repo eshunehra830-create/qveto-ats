@@ -2,13 +2,10 @@ import React from 'react';
 
 export default function Toast({ message, type = 'success' }) {
   if (!message) return null;
-
-  const bgColor = type === 'error' ? 'bg-red-600' : 'bg-slate-900';
-
+  const bgColor = type === 'error' ? 'bg-red-500' : 'bg-green-550 bg-green-600';
   return (
-    <div className={`fixed bottom-6 right-6 ${bgColor} text-white px-5 py-3 rounded-2xl shadow-2xl text-sm font-semibold z-50 flex items-center space-x-2 animate-in fade-in slide-in-from-bottom-5 duration-300`}>
-      <span>{type === 'error' ? '⚠️' : '✅'}</span>
-      <span>{message}</span>
+    <div className={`fixed bottom-4 right-4 text-white px-4 py-2 rounded shadow-lg ${bgColor}`}>
+      {message}
     </div>
   );
 }
