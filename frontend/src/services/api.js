@@ -1,8 +1,7 @@
 import axios from 'axios';
 
-// ⚠️ ध्यान दें: अगर बैकएंड Render/Cyclic पर डिप्लॉय है तो उसका HTTPS URL यहाँ डालें
-// अगर लोकल टेस्ट कर रहे हैं तो 'http://localhost:5000/api' इस्तेमाल करें
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://your-backend-domain.onrender.com/api';
+// The API runs as Netlify Functions on the same site, under /api
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 const API = axios.create({
   baseURL: API_BASE_URL,
@@ -19,6 +18,44 @@ export const loginUser = async (credentials) => {
   } catch (error) {
     throw error.response?.data?.message || 'Server network error / Failed to fetch';
   }
+};
+
+// Attach the saved login token to every request
+API.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Jobs API Functions
+export const fetchJobs = async () => {
+  const response = await API.get('/jobs');
+  return response.data;
+};
+
+export const createJob = async (jobData) => {
+  const response = await API.post('/jobs', jobData);
+  return response.data;
+};
+
+// Candidates API Functions
+export const fetchCandidates = async () => {
+  const response = await API.get('/candidates');
+  return response.data;
+};
+
+export const updateCandidateStage = async (id, data) => {
+  const response = await API.patch(`/candidates/${id}`, data);
+  return response.data;
+};
+
+export const addCandidateWithResume = async (formData) => {
+  const response = await API.post('/candidates', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+  return response.data;
 };
 
 export default API;
