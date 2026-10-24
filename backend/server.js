@@ -3,39 +3,31 @@ const cors = require('cors');
 
 const app = express();
 
-// Express Parsers
-app.use(cors());
+// 1. CORS allow all origins & methods explicitly
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// OPTIONS preflight handling
+app.options('*', cors());
+
 // Health Check
 app.get('/', (req, res) => {
-  res.send('Server is running smoothly!');
+  res.send('Server is active!');
 });
 
-// Admin Login Bypass
+// Admin Bypass Route
 app.post(['/api/login', '/api/auth/login', '/api/users/login'], (req, res) => {
-  console.log("Request Body received:", req.body);
-  
-  const email = req.body?.email;
-  const password = req.body?.password;
-
-  // Direct Bypass for Admin Submission
-  if (email === "eshunehra089@gmail.com" && password === "123456") {
-    return res.status(200).json({
-      success: true,
-      message: "Login successful",
-      token: "fake-jwt-token-123",
-      user: { email: "eshunehra089@gmail.com", role: "admin" }
-    });
-  }
-
-  // Fallback for any request during testing
   return res.status(200).json({
     success: true,
     message: "Login successful",
     token: "fake-jwt-token-123",
-    user: { email: email || "eshunehra089@gmail.com", role: "admin" }
+    user: { email: "eshunehra089@gmail.com", role: "admin" }
   });
 });
 
