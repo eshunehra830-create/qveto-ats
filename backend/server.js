@@ -1,36 +1,34 @@
-const express = require('express');
-const cors = require('cors');
-const app = express();
+// Login Route
+app.post('/api/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-// 1. CORS Allow करें (Vercel और Localhost दोनों के लिए)
-app.use(cors({
-  origin: '*', 
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+    // 1. Check if user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
 
-app.use(express.json());
+    // Debugging logs - Terminal me print honge
+    console.log("1. Frontend se aaya password:", password);
+    console.log("2. Database me saved password:", user.password);
 
-// 2. Login Route Example
-app.post('/api/login', (req, res) => {
-  const { email, password } = req.body;
+    // 2. Compare password using bcrypt
+    const isMatch = await bcrypt.compare(password, user.password);
+    console.log("3. Password Match result:", isMatch);
 
-  // एडमिन क्रेडेंशियल्स चेक करें
-  if (email === 'admin@gmail.com' && password === '123456') {
-    return res.status(200).json({
-      success: true,
-      message: 'Login successful',
-      token: 'fake-jwt-token-xyz'
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid password" });
+    }
+
+    // 3. Login Successful
+    res.json({
+      message: "Login successful",
+      user: { id: user._id, email: user.email }
     });
+
+  } catch (error) {
+    console.error("Login Error:", error);
+    res.status(500).json({ message: "Server error" });
   }
-
-  return res.status(400).json({
-    success: false,
-    message: 'Invalid email or password'
-  });
-});
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
 });
