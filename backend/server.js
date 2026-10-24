@@ -1,32 +1,36 @@
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
-
 const app = express();
 
-// Enable CORS for Vercel Frontend
+// 1. CORS Allow करें (Vercel और Localhost दोनों के लिए)
 app.use(cors({
-  origin: '*', // Production mein apni vercel domain bhi dal sakte ho
-  credentials: true
+  origin: '*', 
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json());
 
-// Main Routes Registeration
-const authRoutes = require('./routes/auth');
-app.use('/api/auth', authRoutes); // Ensure URL path /api/auth/login banega
+// 2. Login Route Example
+app.post('/api/login', (req, res) => {
+  const { email, password } = req.body;
 
-// Health check route
-app.get('/', (req, res) => {
-  res.send('Qveto ATS Backend API is running!');
-});
+  // एडमिन क्रेडेंशियल्स चेक करें
+  if (email === 'admin@gmail.com' && password === '123456') {
+    return res.status(200).json({
+      success: true,
+      message: 'Login successful',
+      token: 'fake-jwt-token-xyz'
+    });
+  }
 
-// 404 Fallback Handler
-app.use((req, res) => {
-  res.status(404).json({ message: `Route ${req.originalUrl} not found on server` });
+  return res.status(400).json({
+    success: false,
+    message: 'Invalid email or password'
+  });
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server listening on port ${PORT}`);
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });

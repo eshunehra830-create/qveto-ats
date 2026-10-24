@@ -1,79 +1,72 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { loginUser } from '../services/api';
 
-const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+export default function LoginPage() {
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const [error, setError] = useState('');
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
+    setError('');
 
     try {
-      const data = await loginUser({ email, password });
-      
-      // Save Token and User Data
-      if (data.token) {
-        localStorage.setItem('token', data.token);
-      }
-      if (data.user) {
-        localStorage.setItem('user', JSON.stringify(data.user));
-      }
-
-      // Redirect to Dashboard
-      navigate('/dashboard');
+      const data = await loginUser(formData);
+      alert('Login Successful!');
+      localStorage.setItem('token', data.token);
+      // होम या डैशबोर्ड पर रिडायरेक्ट करें
+      window.location.href = '/dashboard';
     } catch (err) {
-      console.error('Login Failed:', err);
-      setError(err.response?.data?.message || 'Login failed. Please check credentials or backend status.');
+      setError(err);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-      <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-4 text-center">Sign In</h2>
-        
-        {error && <div className="bg-red-100 text-red-700 p-2 rounded mb-4">{error}</div>}
+    <div className="flex justify-center items-center h-screen bg-gray-100">
+      <form onSubmit={handleSubmit} className="p-6 bg-white rounded-lg shadow-md w-80">
+        <h2 className="text-xl font-bold mb-4 text-center">Admin Login</h2>
+
+        {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
 
         <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2">Email Address</label>
+          <label className="block text-sm mb-1">Email</label>
           <input
             type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
             required
-            className="w-full p-2 border rounded border-gray-300"
+            className="w-full border p-2 rounded"
           />
         </div>
 
-        <div className="mb-6">
-          <label className="block text-gray-700 text-sm font-bold mb-2">Password</label>
+        <div className="mb-4">
+          <label className="block text-sm mb-1">Password</label>
           <input
             type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
             required
-            className="w-full p-2 border rounded border-gray-300"
+            className="w-full border p-2 rounded"
           />
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
         >
-          {loading ? 'Signing In...' : 'Sign In'}
+          {loading ? 'Logging in...' : 'Login'}
         </button>
       </form>
     </div>
   );
-};
-
-export default Login;
+}

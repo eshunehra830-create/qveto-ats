@@ -1,65 +1,23 @@
 import axios from 'axios';
 
+// ⚠️ ध्यान दें: अगर बैकएंड Render/Cyclic पर डिप्लॉय है तो उसका HTTPS URL यहाँ डालें
+// अगर लोकल टेस्ट कर रहे हैं तो 'http://localhost:5000/api' इस्तेमाल करें
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://your-backend-domain.onrender.com/api';
+
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json'
+  }
 });
 
-// 1. Login User
+// Login API Function
 export const loginUser = async (credentials) => {
   try {
-    const response = await API.post('/auth/login', credentials);
+    const response = await API.post('/login', credentials);
     return response.data;
   } catch (error) {
-    console.error('Error logging in:', error);
-    throw error;
-  }
-};
-
-// 2. Fetch Jobs
-export const fetchJobs = async () => {
-  try {
-    const response = await API.get('/jobs');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching jobs:', error);
-    throw error;
-  }
-};
-
-// 3. Fetch Candidates
-export const fetchCandidates = async () => {
-  try {
-    const response = await API.get('/candidates');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching candidates:', error);
-    throw error;
-  }
-};
-
-// 4. Update Candidate Stage (यह अभी जोड़ना है)
-export const updateCandidateStage = async (id, stageData) => {
-  try {
-    const response = await API.put(`/candidates/${id}/stage`, stageData);
-    return response.data;
-  } catch (error) {
-    console.error('Error updating candidate stage:', error);
-    throw error;
-  }
-};
-
-// 5. Add Candidate With Resume (यह भी जोड़ना है)
-export const addCandidateWithResume = async (formData) => {
-  try {
-    const response = await API.post('/candidates', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error adding candidate:', error);
-    throw error;
+    throw error.response?.data?.message || 'Server network error / Failed to fetch';
   }
 };
 
