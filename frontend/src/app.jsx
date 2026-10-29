@@ -1,15 +1,12 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
-import Dashboard from './Dashboard';
-import JobsPage from './JobsPage';
-import CandidatesPage from './CandidatesPage';
-import JobDetails from './JobDetails';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import DashboardPage from './pages/DashboardPage.jsx';
+import JobsPage from './pages/JobsPage.jsx';
+import CandidatesPage from './pages/candidatespage.jsx';
 
 function Layout({ children }) {
-  const navigate = useNavigate();
   return (
     <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'Segoe UI, sans-serif', backgroundColor: '#f0f2f5' }}>
-      
       {/* Sidebar Navigation */}
       <div style={{ width: '220px', background: '#001529', color: 'white', padding: '20px' }}>
         <h2 style={{ color: '#1890ff', fontSize: '20px', marginBottom: '30px' }}>Qveto ATS</h2>
@@ -21,7 +18,7 @@ function Layout({ children }) {
       </div>
 
       {/* Main Content Area */}
-      <div style={{ flex: 1, padding: '30px' }}>
+      <div style={{ flex: 1, padding: '30px', boxSizing: 'border-box' }}>
         {children}
       </div>
     </div>
@@ -33,9 +30,8 @@ export default function App() {
     <Router>
       <Layout>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={<DashboardPage />} />
           <Route path="/jobs" element={<JobsPage />} />
-          <Route path="/job/:id" element={<JobDetails />} />
           <Route path="/candidates" element={<CandidatesPage />} />
         </Routes>
       </Layout>
