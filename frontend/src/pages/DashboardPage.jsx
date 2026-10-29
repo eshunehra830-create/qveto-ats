@@ -14,9 +14,10 @@ export default function Dashboard() {
   const [candEmail, setCandEmail] = useState('');
   const [candStatus, setCandStatus] = useState('Pending');
 
-  // Search states
+  // Search & Filter states
   const [jobSearch, setJobSearch] = useState('');
   const [candSearch, setCandSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
 
   useEffect(() => {
     const savedJobs = JSON.parse(localStorage.getItem('qveto_jobs')) || [
@@ -67,7 +68,6 @@ export default function Dashboard() {
     localStorage.setItem('qveto_candidates', JSON.stringify(updatedCandidates));
   };
 
-  // Export Candidates List to CSV File
   const handleExportCSV = () => {
     if (candidates.length === 0) {
       alert("No candidate data to export!");
@@ -92,7 +92,13 @@ export default function Dashboard() {
   };
 
   const filteredJobs = jobs.filter(job => job.title.toLowerCase().includes(jobSearch.toLowerCase()));
-  const filteredCandidates = candidates.filter(cand => cand.name.toLowerCase().includes(candSearch.toLowerCase()) || cand.email.toLowerCase().includes(candSearch.toLowerCase()));
+  
+  // Filtered Candidates (by Search text & Status filter)
+  const filteredCandidates = candidates.filter(cand => {
+    const matchesSearch = cand.name.toLowerCase().includes(candSearch.toLowerCase()) || cand.email.toLowerCase().includes(candSearch.toLowerCase());
+    const matchesStatus = statusFilter === 'All' || cand.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   // Analytics
   const shortlistedCount = candidates.filter(c => c.status === 'Shortlisted').length;
@@ -237,13 +243,26 @@ export default function Dashboard() {
         {/* Candidates List */}
         <div style={{ background: 'white', padding: '25px', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
           <h4 style={{ margin: '0 0 15px 0', color: '#333' }}>👥 Candidates List</h4>
-          <input 
-            type="text" 
-            placeholder="Search candidates..." 
-            value={candSearch} 
-            onChange={(e) => setCandSearch(e.target.value)} 
-            style={{ width: '100%', padding: '10px', marginBottom: '15px', borderRadius: '6px', border: '1px solid #d9d9d9', boxSizing: 'border-box' }}
-          />
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+            <input 
+              type="text" 
+              placeholder="Search candidates..." 
+              value={candSearch} 
+              onChange={(e) => setCandSearch(e.target.value)} 
+              style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #d9d9d9', boxSizing: 'border-box' }}
+            />
+            <select 
+              value={statusFilter} 
+              onChange={(e) => setStatusFilter(e.target.value)} 
+              style={{ padding: '10px', borderRadius: '6px', border: '1px solid #d9d9d9', backgroundColor: 'white', cursor: 'pointer' }}
+            >
+              <option value="All">All Statuses</option>
+              <option value="Pending">Pending</option>
+              <option value="Shortlisted">Shortlisted</option>
+              <option value="Interviewed">Interviewed</option>
+              <option value="Rejected">Rejected</option>
+            </select>
+          </div>
           {filteredCandidates.length === 0 ? <p style={{ color: '#888' }}>No candidates found.</p> : (
             <ul style={{ paddingLeft: 0, margin: 0, listStyle: 'none' }}>
               {filteredCandidates.map(cand => (
