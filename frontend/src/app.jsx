@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from 'react';
 
 export default function App() {
+  // Auth state
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authMode, setAuthMode] = useState('login'); // 'login' or 'signup'
+  const [userEmail, setUserEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  // App Navigation & Data States
   const [activeTab, setActiveTab] = useState('dashboard');
-  
   const [jobs, setJobs] = useState([]);
   const [candidates, setCandidates] = useState([]);
 
@@ -15,6 +21,14 @@ export default function App() {
   const [candFilter, setCandFilter] = useState('All');
 
   useEffect(() => {
+    // Check if user is already logged in
+    const token = localStorage.getItem('qveto_token');
+    const savedUser = localStorage.getItem('qveto_user');
+    if (token && savedUser) {
+      setIsAuthenticated(true);
+      setUserEmail(savedUser);
+    }
+
     const savedJobs = JSON.parse(localStorage.getItem('qveto_jobs')) || [
       { id: 1, title: 'Full Stack Developer', desc: 'React.js & Node.js integration.' }
     ];
@@ -25,6 +39,29 @@ export default function App() {
     setCandidates(savedCandidates);
   }, []);
 
+  // Auth Handlers
+  const handleAuthSubmit = (e) => {
+    e.preventDefault();
+    if (!userEmail || !password) return;
+
+    if (authMode === 'signup') {
+      alert("Account created successfully! Logging you in...");
+    }
+
+    localStorage.setItem('qveto_token', 'sample_auth_token_123');
+    localStorage.setItem('qveto_user', userEmail);
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('qveto_token');
+    localStorage.removeItem('qveto_user');
+    setIsAuthenticated(false);
+    setUserEmail('');
+    setPassword('');
+  };
+
+  // Job & Candidate Handlers
   const handleAddJob = (e) => {
     e.preventDefault();
     if (!jobTitle) return;
@@ -62,7 +99,7 @@ export default function App() {
 
   const handleExportCSV = () => {
     if (candidates.length === 0) {
-      alert("No data to export!");
+      alert("No candidate data to export!");
       return;
     }
     const headers = ["ID", "Name", "Email", "Status"];
@@ -82,30 +119,96 @@ export default function App() {
 
   const filteredCandidates = candidates.filter(c => candFilter === 'All' || c.status === candFilter);
 
+  // 1. SHOW LOGIN / SIGNUP SCREEN IF NOT AUTHENTICATED
+  if (!isAuthenticated) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#f0f2f5', fontFamily: 'Segoe UI, sans-serif' }}>
+        <div style={{ background: 'white', padding: '40px', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', width: '380px' }}>
+          <h2 style={{ textAlign: 'center', color: '#1890ff', margin: '0 0 10px 0' }}>Qveto ATS Portal</h2>
+          <p style={{ textAlign: 'center', color: '#666', fontSize: '14px', marginBottom: '25px' }}>
+            {authMode === 'login' ? 'Login to access ATS Dashboard' : 'Create a new account'}
+          </p>
+
+          <form onSubmit={handleAuthSubmit}>
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ fontSize: '13px', color: '#333', fontWeight: '600' }}>Email Address</label>
+              <input 
+                type="email" 
+                placeholder="admin@qveto.com" 
+                value={userEmail} 
+                onChange={(e) => setUserEmail(e.target.value)} 
+                required 
+                style={{ width: '100%', padding: '10px', marginTop: '5px', borderRadius: '6px', border: '1px solid #d9d9d9', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ fontSize: '13px', color: '#333', fontWeight: '600' }}>Password</label>
+              <input 
+                type="password" 
+                placeholder="••••••••" 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)} 
+                required 
+                style={{ width: '100%', padding: '10px', marginTop: '5px', borderRadius: '6px', border: '1px solid #d9d9d9', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            <button type="submit" style={{ width: '100%', padding: '12px', backgroundColor: '#1890ff', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '15px' }}>
+              {authMode === 'login' ? 'Login' : 'Sign Up'}
+            </button>
+          </form>
+
+          <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '13px' }}>
+            {authMode === 'login' ? (
+              <span>Don't have an account? <a href="#signup" onClick={() => setAuthMode('signup')} style={{ color: '#1890ff', textDecoration: 'none', fontWeight: '600' }}>Sign Up</a></span>
+            ) : (
+              <span>Already have an account? <a href="#login" onClick={() => setAuthMode('login')} style={{ color: '#1890ff', textDecoration: 'none', fontWeight: '600' }}>Login</a></span>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. SHOW MAIN DASHBOARD IF AUTHENTICATED
   return (
     <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'Segoe UI, sans-serif', backgroundColor: '#f0f2f5' }}>
       
       {/* Sidebar Navigation */}
-      <div style={{ width: '220px', background: '#001529', color: 'white', padding: '20px', boxSizing: 'border-box' }}>
-        <h2 style={{ color: '#1890ff', fontSize: '20px', marginBottom: '30px' }}>Qveto ATS</h2>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+      <div style={{ width: '230px', background: '#001529', color: 'white', padding: '20px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+        <div>
+          <h2 style={{ color: '#1890ff', fontSize: '20px', marginBottom: '30px' }}>Qveto ATS</h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            <button 
+              onClick={() => setActiveTab('dashboard')} 
+              style={{ background: activeTab === 'dashboard' ? '#1890ff' : 'transparent', color: 'white', border: 'none', padding: '12px', textAlign: 'left', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '15px' }}
+            >
+              📊 Dashboard
+            </button>
+            <button 
+              onClick={() => setActiveTab('jobs')} 
+              style={{ background: activeTab === 'jobs' ? '#1890ff' : 'transparent', color: 'white', border: 'none', padding: '12px', textAlign: 'left', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '15px' }}
+            >
+              💼 Jobs Portal
+            </button>
+            <button 
+              onClick={() => setActiveTab('candidates')} 
+              style={{ background: activeTab === 'candidates' ? '#1890ff' : 'transparent', color: 'white', border: 'none', padding: '12px', textAlign: 'left', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '15px' }}
+            >
+              👥 Candidates
+            </button>
+          </div>
+        </div>
+
+        {/* User Profile & Logout Button */}
+        <div style={{ borderTop: '1px solid #1f3b5c', paddingTop: '15px' }}>
+          <p style={{ margin: '0 0 10px 0', fontSize: '12px', color: '#a6adb4', wordBreak: 'break-all' }}>👤 {userEmail}</p>
           <button 
-            onClick={() => setActiveTab('dashboard')} 
-            style={{ background: activeTab === 'dashboard' ? '#1890ff' : 'transparent', color: 'white', border: 'none', padding: '12px', textAlign: 'left', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '15px' }}
+            onClick={handleLogout} 
+            style={{ width: '100%', padding: '10px', backgroundColor: '#ff4d4f', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' }}
           >
-            📊 Dashboard
-          </button>
-          <button 
-            onClick={() => setActiveTab('jobs')} 
-            style={{ background: activeTab === 'jobs' ? '#1890ff' : 'transparent', color: 'white', border: 'none', padding: '12px', textAlign: 'left', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '15px' }}
-          >
-            💼 Jobs Portal
-          </button>
-          <button 
-            onClick={() => setActiveTab('candidates')} 
-            style={{ background: activeTab === 'candidates' ? '#1890ff' : 'transparent', color: 'white', border: 'none', padding: '12px', textAlign: 'left', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '15px' }}
-          >
-            👥 Candidates
+            🚪 Logout
           </button>
         </div>
       </div>
@@ -117,7 +220,7 @@ export default function App() {
         {activeTab === 'dashboard' && (
           <div>
             <h2>Dashboard Overview</h2>
-            <p style={{ color: '#666', marginBottom: '25px' }}>Welcome back! Here is a summary of your ATS platform.</p>
+            <p style={{ color: '#666', marginBottom: '25px' }}>Welcome back, <strong>{userEmail}</strong>! Here is your hiring summary.</p>
             
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px', marginBottom: '30px' }}>
               <div style={{ background: 'white', padding: '20px', borderRadius: '8px', borderTop: '4px solid #1890ff', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
