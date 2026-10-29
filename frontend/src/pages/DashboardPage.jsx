@@ -24,7 +24,8 @@ export default function Dashboard() {
       { id: 2, title: 'AI Integration Engineer', desc: 'Implementing generative AI SDKs and automation.' }
     ];
     const savedCandidates = JSON.parse(localStorage.getItem('qveto_candidates')) || [
-      { id: 1, name: 'Rahul Sharma', email: 'rahul@gmail.com', status: 'Shortlisted' }
+      { id: 1, name: 'Rahul Sharma', email: 'rahul@gmail.com', status: 'Shortlisted' },
+      { id: 2, name: 'Priya Verma', email: 'priya@gmail.com', status: 'Pending' }
     ];
 
     setJobs(savedJobs);
@@ -66,15 +67,37 @@ export default function Dashboard() {
     localStorage.setItem('qveto_candidates', JSON.stringify(updatedCandidates));
   };
 
+  // Export Candidates List to CSV File
+  const handleExportCSV = () => {
+    if (candidates.length === 0) {
+      alert("No candidate data to export!");
+      return;
+    }
+    const headers = ["ID", "Name", "Email", "Status"];
+    const rows = candidates.map(c => [c.id, `"${c.name}"`, `"${c.email}"`, `"${c.status}"`]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "qveto_candidates_list.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     navigate('/');
   };
 
-  // Filtered lists for search
   const filteredJobs = jobs.filter(job => job.title.toLowerCase().includes(jobSearch.toLowerCase()));
   const filteredCandidates = candidates.filter(cand => cand.name.toLowerCase().includes(candSearch.toLowerCase()) || cand.email.toLowerCase().includes(candSearch.toLowerCase()));
+
+  // Analytics
+  const shortlistedCount = candidates.filter(c => c.status === 'Shortlisted').length;
+  const pendingCount = candidates.filter(c => c.status === 'Pending').length;
+  const rejectedCount = candidates.filter(c => c.status === 'Rejected').length;
 
   return (
     <div style={{ padding: '40px', fontFamily: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif', backgroundColor: '#f0f2f5', minHeight: '100vh' }}>
@@ -82,23 +105,36 @@ export default function Dashboard() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', background: 'white', padding: '20px 30px', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
         <div>
-          <h2 style={{ margin: 0, color: '#333', fontSize: '24px' }}>Qveto ATS - Professional Dashboard</h2>
-          <p style={{ margin: '5px 0 0 0', color: '#666', fontSize: '14px' }}>Manage Jobs & Candidates Seamlessly</p>
+          <h2 style={{ margin: 0, color: '#333', fontSize: '24px' }}>Qveto ATS - Enterprise Dashboard</h2>
+          <p style={{ margin: '5px 0 0 0', color: '#666', fontSize: '14px' }}>Candidate Management & Analytics</p>
         </div>
-        <button onClick={handleLogout} style={{ padding: '10px 20px', backgroundColor: '#ff4d4f', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' }}>
-          Logout
-        </button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button onClick={handleExportCSV} style={{ padding: '10px 18px', backgroundColor: '#722ed1', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' }}>
+            📥 Export CSV
+          </button>
+          <button onClick={handleLogout} style={{ padding: '10px 18px', backgroundColor: '#ff4d4f', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' }}>
+            Logout
+          </button>
+        </div>
       </div>
 
       {/* Stats Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px' }}>
-        <div style={{ background: 'linear-gradient(135deg, #36cfc9 0%, #1890ff 100%)', color: 'white', padding: '25px', borderRadius: '10px', textAlign: 'center' }}>
-          <h3 style={{ margin: '0 0 10px 0', fontSize: '18px' }}>Total Jobs</h3>
-          <p style={{ fontSize: '36px', fontWeight: 'bold', margin: 0 }}>{jobs.length}</p>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '15px', marginBottom: '30px' }}>
+        <div style={{ background: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', textAlign: 'center', borderTop: '4px solid #1890ff' }}>
+          <h4 style={{ margin: '0 0 5px 0', color: '#666', fontSize: '14px' }}>Total Jobs</h4>
+          <p style={{ fontSize: '28px', fontWeight: 'bold', margin: 0, color: '#1890ff' }}>{jobs.length}</p>
         </div>
-        <div style={{ background: 'linear-gradient(135deg, #52c41a 0%, #389e0d 100%)', color: 'white', padding: '25px', borderRadius: '10px', textAlign: 'center' }}>
-          <h3 style={{ margin: '0 0 10px 0', fontSize: '18px' }}>Total Candidates</h3>
-          <p style={{ fontSize: '36px', fontWeight: 'bold', margin: 0 }}>{candidates.length}</p>
+        <div style={{ background: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', textAlign: 'center', borderTop: '4px solid #faad14' }}>
+          <h4 style={{ margin: '0 0 5px 0', color: '#666', fontSize: '14px' }}>Pending</h4>
+          <p style={{ fontSize: '28px', fontWeight: 'bold', margin: 0, color: '#faad14' }}>{pendingCount}</p>
+        </div>
+        <div style={{ background: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', textAlign: 'center', borderTop: '4px solid #52c41a' }}>
+          <h4 style={{ margin: '0 0 5px 0', color: '#666', fontSize: '14px' }}>Shortlisted</h4>
+          <p style={{ fontSize: '28px', fontWeight: 'bold', margin: 0, color: '#52c41a' }}>{shortlistedCount}</p>
+        </div>
+        <div style={{ background: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', textAlign: 'center', borderTop: '4px solid #ff4d4f' }}>
+          <h4 style={{ margin: '0 0 5px 0', color: '#666', fontSize: '14px' }}>Rejected</h4>
+          <p style={{ fontSize: '28px', fontWeight: 'bold', margin: 0, color: '#ff4d4f' }}>{rejectedCount}</p>
         </div>
       </div>
 
@@ -215,7 +251,7 @@ export default function Dashboard() {
                   <div>
                     <strong style={{ color: '#389e0d' }}>{cand.name}</strong><br />
                     <span style={{ fontSize: '13px', color: '#666' }}>{cand.email}</span><br />
-                    <span style={{ fontSize: '11px', padding: '2px 6px', background: cand.status === 'Shortlisted' ? '#e6f7ff' : cand.status === 'Rejected' ? '#fff1f0' : '#f6ffed', color: cand.status === 'Shortlisted' ? '#1890ff' : cand.status === 'Rejected' ? '#ff4d4f' : '#52c41a', borderRadius: '4px', fontWeight: 'bold' }}>
+                    <span style={{ fontSize: '11px', padding: '2px 6px', background: cand.status === 'Shortlisted' ? '#e6f7ff' : cand.status === 'Rejected' ? '#fff1f0' : '#fffbe6', color: cand.status === 'Shortlisted' ? '#1890ff' : cand.status === 'Rejected' ? '#ff4d4f' : '#faad14', borderRadius: '4px', fontWeight: 'bold' }}>
                       {cand.status}
                     </span>
                   </div>
