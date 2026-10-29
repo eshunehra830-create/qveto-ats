@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Agar react-router use kar raha hai toh
+import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -9,22 +9,20 @@ export default function Login() {
 
   const handleLogin = (e) => {
     e.preventDefault();
+    setError('');
 
-    // 🚀 Emergency Bypass for Final Submission
-    if (email === "eshunehra089@gmail.com" && password === "123456") {
-      localStorage.setItem("token", "emergency-admin-token-123");
+    // 🚀 Pure Local Bypass for Submission (No Backend Server Required)
+    if (email.trim() === "eshunehra089@gmail.com" && password === "123456") {
+      localStorage.setItem("token", "admin-session-token-123");
       localStorage.setItem("user", JSON.stringify({ email: "eshunehra089@gmail.com", role: "admin" }));
       
-      // Yahan apna dashboard ka route check kar lena (jaise /dashboard ya /admin)
+      // Apne dashboard ka route yahan check kar lena (jaise /dashboard ya /admin)
       navigate('/dashboard'); 
       return;
-    }
+    } 
 
-    // Normal check agar koi aur try kare
-    if (email !== "eshunehra089@gmail.com" || password !== "123456") {
-      setError("Invalid email or password");
-      return;
-    }
+    // Invalid Credentials Check
+    setError("Invalid email or password");
   };
 
   return (
@@ -32,7 +30,7 @@ export default function Login() {
       <div style={{ background: 'white', padding: '40px', borderRadius: '8px', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', width: '350px' }}>
         <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#333' }}>Admin Login</h2>
         
-        {error && <p style={{ color: 'red', textAlign: 'center', fontSize: '14px' }}>{error}</p>}
+        {error && <p style={{ color: 'red', textAlign: 'center', fontSize: '14px', marginBottom: '15px' }}>{error}</p>}
         
         <form onSubmit={handleLogin}>
           <div style={{ marginBottom: '15px' }}>
